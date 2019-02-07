@@ -1,0 +1,12 @@
+[package]
+name = "extdot"
+version = "0.1.0"
+authors = ["James Cassidy <qfire-vc@qfire.net>"]
+edition = "2018"
+
+[workspace]
+members = ["extdot-impl"]
+
+[dependencies]
+extdot-impl = { path = "extdot-impl" }
+proc-macro-hack = "0.5"
