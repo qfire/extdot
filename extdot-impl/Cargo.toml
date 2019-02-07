@@ -1,7 +1,7 @@
 [package]
 name = "extdot-impl"
 description = "Please see `extdot` crate for actual usage"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["James Cassidy <qfire-vc@qfire.net>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/qfire/extdot-impl"
