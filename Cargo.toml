@@ -1,12 +1,18 @@
 [package]
 name = "extdot"
+description = "A set of macros for testing the extended dot notation"
 version = "0.1.0"
 authors = ["James Cassidy <qfire-vc@qfire.net>"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/qfire/extdot"
+documentation = "https://docs.rs/extdot"
+categories = ["parser-implementations","rust-patterns"]
+readme = "README.md"
 edition = "2018"
 
 [workspace]
 members = ["extdot-impl"]
 
 [dependencies]
-extdot-impl = { path = "extdot-impl" }
+extdot-impl = { version = "0.1.0" , path = "extdot-impl" }
 proc-macro-hack = "0.5"
