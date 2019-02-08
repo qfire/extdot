@@ -160,6 +160,7 @@ fn is_expressionable(last_token: &Option<TokenTree>, token: &TokenTree) -> bool 
         }
         TokenTree::Punct(ref punct) if punct.as_char() == '<' => true,
         TokenTree::Punct(ref punct) if punct.as_char() == '>' => true,
+        TokenTree::Punct(ref punct) if punct.as_char() == '?' => true,
         _ => false,
     }
 }

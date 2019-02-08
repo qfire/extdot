@@ -27,15 +27,17 @@ use proc_macro_hack::proc_macro_hack;
 ///   y: i32
 /// }
 ///
-/// fn main() {
+/// fn main() -> Result<(), Box<std::error::Error>>{
 ///     extdot::expr!{
 ///         let point: Point =
 ///           Path::new("tests/data/point.json")
-///           .[File::open].expect("file not found")
-///           .[serde_json::from_reader].expect("error while reading json");
+///           .[File::open]?
+///           .[serde_json::from_reader]?;
 ///
 ///#        assert_eq!(point.x, 4);
 ///#        assert_eq!(point.y, 6);
+///
+///         Ok(())
 ///     }
 /// }
 /// ```
