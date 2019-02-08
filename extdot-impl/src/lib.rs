@@ -96,6 +96,13 @@ fn extdot(trees: impl Iterator<Item = TokenTree>) -> impl Iterator<Item = TokenT
 fn transliterate(expr: &mut Vec<TokenTree>, grp: &Group) -> TokenTree {
     use std::str::FromStr;
 
+    if grp.stream().is_empty() {
+        #[cfg(nightly)]
+        grp.span().warning("empty extended dot, consider removing it");
+
+        return TokenTree::Group(Group::new(Delimiter::Brace, grp.stream()));
+    }
+
     let mut output: Vec<TokenTree> = vec![];
 
     output.extend(TokenStream::from_str("let mut it = ").unwrap());
