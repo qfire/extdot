@@ -3,7 +3,12 @@
 [Pre-RFC] Extended Dot Operator
 ===============================
 
-[![](https://meritbadge.herokuapp.com/extdot)](https://crates.io/crates/extdot)
+[![Documentation](https://docs.rs/extdot/badge.svg)](https://docs.rs/extdot)
+[![Version](https://img.shields.io/crates/v/extdot.svg)](https://crates.io/crates/extdot)
+[![Build Status](https://travis-ci.org/qfire/extdot.svg?branch=master)](https://travis-ci.org/qfire/extdot)
+[![Coverage Status](https://coveralls.io/repos/github/qfire/extdot/badge.svg?branch=master)](https://coveralls.io/github/qfire/extdot?branch=master)
+[![Downloads](https://img.shields.io/crates/d/extdot.svg)](https://crates.io/crates/extdot)
+[![License](https://img.shields.io/crates/l/extdot.svg)](https://crates.io/crates/extdot)
 
 This is a set of macros for testing out the [Pre-RFC Extended dot operator].  The working outline
 for this RFC can be found on [HackMD]. The macros contained here are currently a work in progress
