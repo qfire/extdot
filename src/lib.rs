@@ -41,6 +41,18 @@ use proc_macro_hack::proc_macro_hack;
 ///     }
 /// }
 /// ```
+///
+/// ```
+/// extdot::expr!{
+///     let map = std::collections::HashMap::new().[
+///         it.insert("key1", 13),
+///         it.insert("key2", 17),
+///     ];
+///
+///#    assert_eq!(map.get("key1"), Some(&13));
+///#    assert_eq!(map.get("key2"), Some(&17));
+/// }
+/// ```
 #[proc_macro_hack]
 pub use extdot_impl::expr;
 

@@ -102,18 +102,32 @@ fn transliterate(expr: &mut Vec<TokenTree>, grp: &Group) -> TokenTree {
     output.append(expr);
     output.push(TokenTree::Punct(Punct::new(';', Spacing::Alone)));
 
-    let mut subexpr = grp.stream().into_iter().collect::<Vec<_>>();
+    let mut gstream = grp.stream().into_iter().collect::<Vec<_>>();
 
-    if is_ident(&subexpr) {
-        replace_it(&mut subexpr);
-        output.extend(subexpr);
-        output.extend(TokenStream::from_str("(it)").unwrap());
-    } else {
-        // Process group tokens before running replace_it so that recursive usage is handled properly.
-        let mut subexpr = extdot(grp.stream().into_iter()).into_iter().collect::<Vec<_>>();
-        replace_it(&mut subexpr);
-        output.extend(subexpr);
+    let split_subexprs = |tok: &TokenTree| match tok {
+        TokenTree::Punct(ref p) if p.as_char() == ',' => true,
+        _ => false,
+    };
+
+    for subexpr in gstream.split_mut(split_subexprs) {
+        if subexpr.is_empty() {
+            output.extend(TokenStream::from_str("it").unwrap());
+        } else if is_ident(&subexpr) {
+            replace_it(subexpr);
+            output.extend_from_slice(subexpr);
+            output.extend(TokenStream::from_str("(it)").unwrap());
+        } else {
+            // Process group tokens before running replace_it so that recursive usage is handled properly.
+            // let mut subexpr = extdot(grp.stream().into_iter()).into_iter().collect::<Vec<_>>();
+            let mut subexpr = extdot(subexpr.iter().cloned()).into_iter().collect::<Vec<_>>();
+            replace_it(&mut subexpr);
+            output.extend(subexpr);
+        }
+
+        output.push(TokenTree::Punct(Punct::new(';', Spacing::Alone)));
     }
+
+    output.pop();
 
     TokenTree::Group(Group::new(
         Delimiter::Brace,
@@ -121,7 +135,7 @@ fn transliterate(expr: &mut Vec<TokenTree>, grp: &Group) -> TokenTree {
     ))
 }
 
-fn replace_it(block: &mut Vec<TokenTree>) {
+fn replace_it(block: &mut [TokenTree]) {
     for token in block {
         match token {
             TokenTree::Ident(ref idnt) if idnt.to_string() == "it" => {
