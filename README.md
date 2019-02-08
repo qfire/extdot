@@ -3,6 +3,8 @@
 [Pre-RFC] Extended Dot Operator
 ===============================
 
+[![](https://meritbadge.herokuapp.com/extdot)](https://crates.io/crates/extdot)
+
 This is a set of macros for testing out the [Pre-RFC Extended dot operator].  The working outline
 for this RFC can be found on [HackMD]. The macros contained here are currently a work in progress
 and the state with which they following the RFC will continue to change.
@@ -10,7 +12,7 @@ and the state with which they following the RFC will continue to change.
 [Pre-RFC Extended dot operator]: https://internals.rust-lang.org/t/pre-rfc-extended-dot-operator-as-possible-syntax-for-await-chaining/9304
 [HackMD]: https://hackmd.io/s/BkKGyepXV#
 
-## License
+# License
 
 Licensed under either of
 
@@ -19,7 +21,7 @@ Licensed under either of
 
 at your option.
 
-# Contribution
+## Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in this crate by you, as defined in the Apache-2.0 license, shall

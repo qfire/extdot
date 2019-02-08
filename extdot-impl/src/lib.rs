@@ -16,33 +16,6 @@ pub fn expr(input: TokenStream) -> TokenStream {
 }
 
 /// Allows the use of the extended dot notation in expressions.
-///
-/// # Examples
-/// ```rust
-///# use extdot_impl as extdot;
-/// use std::fmt;
-///
-/// struct Example {}
-///
-/// extdot::item!{
-///   impl fmt::Display for Example {
-///     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-///        let v: i32 = -7;
-///
-///        let v_abs = v.[it.abs()];
-///#       assert_eq!(v_abs, 7);
-///        let v_pow = v.[it.pow(2)];
-///#       assert_eq!(v_pow, 49);
-///
-///        write!(f, "({}, {})", v_abs, v_pow)
-///     }
-///   }
-/// }
-///
-/// fn main() {
-///     println!("{}", Example {});
-/// }
-/// ```
 #[proc_macro]
 pub fn item(input: TokenStream) -> TokenStream {
     let input = input.into_iter();
