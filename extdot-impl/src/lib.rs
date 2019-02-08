@@ -69,16 +69,13 @@ fn extdot(trees: impl Iterator<Item = TokenTree>) -> impl Iterator<Item = TokenT
                 // re-arrange extended dot syntax into something parsable
                 transliterate(&mut last_expression, grp)
             }
-            _ => token,
-        };
-
-        let token = match token {
-            TokenTree::Group(ref grp) => {
+            (_, TokenTree::Group(ref grp)) => {
                 let block = extdot(grp.stream().into_iter());
                 let block = TokenStream::from_iter(block);
 
                 TokenTree::Group(Group::new(grp.delimiter(), block))
             }
+
             _ => token,
         };
 
@@ -107,13 +104,15 @@ fn transliterate(expr: &mut Vec<TokenTree>, grp: &Group) -> TokenTree {
 
     let mut subexpr = grp.stream().into_iter().collect::<Vec<_>>();
 
-    let make_call = is_ident(&subexpr);
-
-    replace_it(&mut subexpr);
-    output.extend(subexpr);
-
-    if make_call {
+    if is_ident(&subexpr) {
+        replace_it(&mut subexpr);
+        output.extend(subexpr);
         output.extend(TokenStream::from_str("(it)").unwrap());
+    } else {
+        // Process group tokens before running replace_it so that recursive usage is handled properly.
+        let mut subexpr = extdot(grp.stream().into_iter()).into_iter().collect::<Vec<_>>();
+        replace_it(&mut subexpr);
+        output.extend(subexpr);
     }
 
     TokenTree::Group(Group::new(
@@ -126,7 +125,7 @@ fn replace_it(block: &mut Vec<TokenTree>) {
     for token in block {
         match token {
             TokenTree::Ident(ref idnt) if idnt.to_string() == "it" => {
-                // Replace Span with one that can resolve to extdot's it
+                // Replace Span with one that can resolve to extdot's `it`
                 *token = TokenTree::Ident(Ident::new("it", Span::call_site()));
             }
             TokenTree::Group(ref grp) => {
