@@ -56,6 +56,7 @@ pub fn item(input: TokenStream) -> TokenStream {
 fn extdot(trees: impl Iterator<Item = TokenTree>) -> impl Iterator<Item = TokenTree> {
     let mut output = vec![];
     let mut last_expression = vec![];
+    let mut last_token = None;
 
     for token in trees {
         let token = match (last_expression.last(), &token) {
@@ -81,12 +82,14 @@ fn extdot(trees: impl Iterator<Item = TokenTree>) -> impl Iterator<Item = TokenT
             _ => token,
         };
 
-        if is_expressionable(&token) {
+        if is_expressionable(&last_token, &token) {
             last_expression.push(token.clone());
         } else {
             output.append(&mut last_expression);
-            output.push(token);
+            output.push(token.clone());
         }
+
+        last_token = Some(token);
     }
 
     output.append(&mut last_expression);
@@ -141,15 +144,21 @@ fn replace_it(block: &mut Vec<TokenTree>) {
     }
 }
 
-// TODO: Currently this doesn't handle struct initializers, need to checking `Spacing` on `:`
-fn is_expressionable(token: &TokenTree) -> bool {
+fn is_expressionable(last_token: &Option<TokenTree>, token: &TokenTree) -> bool {
     match token {
         TokenTree::Group(ref grp) if grp.delimiter() == Delimiter::Parenthesis => true,
         TokenTree::Group(ref grp) if grp.delimiter() == Delimiter::Brace => true,
         TokenTree::Group(ref grp) if grp.delimiter() == Delimiter::Bracket => true,
         TokenTree::Ident(_) => true,
+        TokenTree::Literal(_) => true,
         TokenTree::Punct(ref punct) if punct.as_char() == '.' => true,
-        TokenTree::Punct(ref punct) if punct.as_char() == ':' => true,
+        TokenTree::Punct(ref punct) if punct.as_char() == ':' && punct.spacing() == Spacing::Joint => true,
+        TokenTree::Punct(ref punct) if punct.as_char() == ':' && punct.spacing() == Spacing::Alone => {
+            match last_token {
+                Some(TokenTree::Punct(ref p)) if p.as_char() == ':' && p.spacing() == Spacing::Joint => true,
+                _ => false,
+            }
+        }
         TokenTree::Punct(ref punct) if punct.as_char() == '<' => true,
         TokenTree::Punct(ref punct) if punct.as_char() == '>' => true,
         _ => false,
