@@ -98,6 +98,8 @@ fn transliterate(expr: &mut Vec<TokenTree>, grp: &Group) -> TokenTree {
             replace_it(subexpr);
             output.extend_from_slice(subexpr);
             output.extend(TokenStream::from_str("(it)").unwrap());
+        } else if is_fn_call(&subexpr) && has_no_it(&subexpr) {
+            output.extend(implicit_method_call(subexpr));
         } else {
             replace_it(&mut subexpr);
             output.extend(subexpr.iter().cloned());
@@ -170,4 +172,60 @@ fn is_ident(trees: &[TokenTree]) -> bool {
     }
 
     true
+}
+
+fn implicit_method_call(trees: &[TokenTree]) -> Vec<TokenTree> {
+    let mut output = vec![];
+
+    let mut trees = trees.iter();
+
+    if let Some(mut last_token) = trees.next() {
+        for token in trees {
+            match (last_token, token) {
+                (TokenTree::Ident(_), TokenTree::Group(ref grp))
+                    if grp.delimiter() == Delimiter::Parenthesis => {
+                        output.push(TokenTree::Ident(Ident::new("it", Span::call_site())));
+                        output.push(TokenTree::Punct(Punct::new('.', Spacing::Alone)));
+                        output.push(last_token.clone());
+                    }
+                _ => output.push(last_token.clone()),
+            }
+
+            last_token = token;
+        }
+
+        output.push(last_token.clone());
+    }
+
+    output
+}
+
+fn has_no_it(trees: &[TokenTree]) -> bool {
+    for token in trees {
+        match token {
+            TokenTree::Ident(ref idnt) if idnt.to_string() == "it" => return false,
+            _ => ()
+        }
+    }
+
+    true
+}
+
+fn is_fn_call(trees: &[TokenTree]) -> bool {
+    let mut last_token = None;
+
+    for token in trees {
+        match token {
+            TokenTree::Group(ref grp) if grp.delimiter() == Delimiter::Parenthesis => {
+                if let Some(TokenTree::Ident(_)) = last_token {
+                    return true
+                }
+            }
+            _ => ()
+        }
+
+        last_token = Some(token.clone());
+    }
+
+    false
 }
