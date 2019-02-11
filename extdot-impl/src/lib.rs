@@ -82,14 +82,16 @@ fn transliterate(expr: &mut Vec<TokenTree>, grp: &Group) -> TokenTree {
     output.append(expr);
     output.push(TokenTree::Punct(Punct::new(';', Spacing::Alone)));
 
-    let mut gstream = grp.stream().into_iter().collect::<Vec<_>>();
+    // Process group tokens before processing implicits and running replace_it so that recursive
+    // usage is handled properly.
+    let mut gstream = extdot(grp.stream().into_iter()).into_iter().collect::<Vec<_>>();
 
     let split_subexprs = |tok: &TokenTree| match tok {
         TokenTree::Punct(ref p) if p.as_char() == ',' => true,
         _ => false,
     };
 
-    for subexpr in gstream.split_mut(split_subexprs) {
+    for mut subexpr in gstream.split_mut(split_subexprs) {
         if subexpr.is_empty() {
             output.extend(TokenStream::from_str("it").unwrap());
         } else if is_ident(&subexpr) {
@@ -97,11 +99,8 @@ fn transliterate(expr: &mut Vec<TokenTree>, grp: &Group) -> TokenTree {
             output.extend_from_slice(subexpr);
             output.extend(TokenStream::from_str("(it)").unwrap());
         } else {
-            // Process group tokens before running replace_it so that recursive usage is handled properly.
-            // let mut subexpr = extdot(grp.stream().into_iter()).into_iter().collect::<Vec<_>>();
-            let mut subexpr = extdot(subexpr.iter().cloned()).into_iter().collect::<Vec<_>>();
             replace_it(&mut subexpr);
-            output.extend(subexpr);
+            output.extend(subexpr.iter().cloned());
         }
 
         output.push(TokenTree::Punct(Punct::new(';', Spacing::Alone)));
