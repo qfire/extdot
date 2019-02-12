@@ -1,5 +1,8 @@
 extern crate proc_macro;
 
+mod helpers;
+
+use helpers::IdentifyFirstLast;
 use proc_macro::{Delimiter, Group, Ident, Punct, Spacing, Span, TokenStream, TokenTree};
 use proc_macro_hack::proc_macro_hack;
 use std::iter::FromIterator;
@@ -27,43 +30,48 @@ pub fn item(input: TokenStream) -> TokenStream {
 
 
 fn extdot(trees: impl Iterator<Item = TokenTree>) -> impl Iterator<Item = TokenTree> {
-    let mut output = vec![];
     let mut last_expression = vec![];
-    let mut last_token = None;
+    let mut was_dot = false;
 
-    for token in trees {
-        let token = match (last_expression.last(), &token) {
-            (Some(TokenTree::Punct(ref punct)), TokenTree::Group(ref grp))
-                if punct.as_char() == '.' =>
-            {
+    trees.identify_first_last().flat_map(move |(_first, last, token)| {
+        let mut rv: Vec<Box<Iterator<Item = TokenTree>>> = vec![];
+
+        let token = match (was_dot, &token) {
+            (true, TokenTree::Group(ref grp)) => {
+                was_dot = false;
+
                 // remove last '.' that's part of extdot
                 last_expression.pop();
 
                 // re-arrange extended dot syntax into something parsable
                 transliterate(&mut last_expression, grp)
             }
-            (_, TokenTree::Group(ref grp)) => {
+            (false, TokenTree::Group(ref grp)) => {
                 let block = extdot(grp.stream().into_iter());
                 let block = TokenStream::from_iter(block);
 
                 TokenTree::Group(Group::new(grp.delimiter(), block))
             }
-
-            _ => token,
+            (_, TokenTree::Punct(ref p)) if p.as_char() == '.' => {
+                was_dot = true;
+                token
+            }
+            _ => {
+                was_dot = false;
+                token
+            }
         };
 
-        if is_expressionable(&last_token, &token) {
-            last_expression.push(token.clone());
-        } else {
-            output.append(&mut last_expression);
-            output.push(token.clone());
+        let last_token = last_expression.last().cloned();
+        last_expression.push(token.clone());
+
+        if last || !is_expressionable(&last_token, &token) {
+            rv.push(Box::new(last_expression.clone().into_iter()));
+            last_expression.clear();
         }
 
-        last_token = Some(token);
-    }
-
-    output.append(&mut last_expression);
-    output.into_iter()
+        rv.into_iter().flatten()
+    })
 }
 
 fn transliterate(expr: &mut Vec<TokenTree>, grp: &Group) -> TokenTree {
