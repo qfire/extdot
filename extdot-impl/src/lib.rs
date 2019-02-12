@@ -86,11 +86,11 @@ fn transliterate(expr: &mut Vec<TokenTree>, grp: &Group) -> TokenTree {
 
     let mut output: Vec<TokenTree> = vec![];
 
-    output.extend(TokenStream::from_str("let mut it = ").unwrap());
+    output.extend(TokenStream::from_str("let mut this = ").unwrap());
     output.append(expr);
     output.push(TokenTree::Punct(Punct::new(';', Spacing::Alone)));
 
-    // Process group tokens before processing implicits and running replace_it so that recursive
+    // Process group tokens before processing implicits and running replace_this so that recursive
     // usage is handled properly.
     let mut gstream = extdot(grp.stream().into_iter()).into_iter().collect::<Vec<_>>();
 
@@ -101,15 +101,15 @@ fn transliterate(expr: &mut Vec<TokenTree>, grp: &Group) -> TokenTree {
 
     for mut subexpr in gstream.split_mut(split_subexprs) {
         if subexpr.is_empty() {
-            output.extend(TokenStream::from_str("it").unwrap());
+            output.extend(TokenStream::from_str("this").unwrap());
         } else if is_ident(&subexpr) {
-            replace_it(subexpr);
+            replace_this(subexpr);
             output.extend_from_slice(subexpr);
-            output.extend(TokenStream::from_str("(it)").unwrap());
-        } else if is_fn_call(&subexpr) && has_no_it(&subexpr) {
+            output.extend(TokenStream::from_str("(this)").unwrap());
+        } else if is_fn_call(&subexpr) && has_no_this(&subexpr) {
             output.extend(implicit_method_call(subexpr));
         } else {
-            replace_it(&mut subexpr);
+            replace_this(&mut subexpr);
             output.extend(subexpr.iter().cloned());
         }
 
@@ -124,17 +124,17 @@ fn transliterate(expr: &mut Vec<TokenTree>, grp: &Group) -> TokenTree {
     ))
 }
 
-fn replace_it(block: &mut [TokenTree]) {
+fn replace_this(block: &mut [TokenTree]) {
     for token in block {
         match token {
-            TokenTree::Ident(ref idnt) if idnt.to_string() == "it" => {
-                // Replace Span with one that can resolve to extdot's `it`
-                *token = TokenTree::Ident(Ident::new("it", Span::call_site()));
+            TokenTree::Ident(ref idnt) if idnt.to_string() == "this" => {
+                // Replace Span with one that can resolve to extdot's `this`
+                *token = TokenTree::Ident(Ident::new("this", Span::call_site()));
             }
             TokenTree::Group(ref grp) => {
                 let mut nested = grp.stream().into_iter().collect::<Vec<_>>();
 
-                replace_it(&mut nested);
+                replace_this(&mut nested);
 
                 *token = TokenTree::Group(Group::new(
                     grp.delimiter(),
@@ -192,7 +192,7 @@ fn implicit_method_call(trees: &[TokenTree]) -> Vec<TokenTree> {
             match (last_token, token) {
                 (TokenTree::Ident(_), TokenTree::Group(ref grp))
                     if grp.delimiter() == Delimiter::Parenthesis => {
-                        output.push(TokenTree::Ident(Ident::new("it", Span::call_site())));
+                        output.push(TokenTree::Ident(Ident::new("this", Span::call_site())));
                         output.push(TokenTree::Punct(Punct::new('.', Spacing::Alone)));
                         output.push(last_token.clone());
                     }
@@ -208,10 +208,10 @@ fn implicit_method_call(trees: &[TokenTree]) -> Vec<TokenTree> {
     output
 }
 
-fn has_no_it(trees: &[TokenTree]) -> bool {
+fn has_no_this(trees: &[TokenTree]) -> bool {
     for token in trees {
         match token {
-            TokenTree::Ident(ref idnt) if idnt.to_string() == "it" => return false,
+            TokenTree::Ident(ref idnt) if idnt.to_string() == "this" => return false,
             _ => ()
         }
     }

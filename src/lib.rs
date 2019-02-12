@@ -7,9 +7,9 @@
 //!     extdot::expr!{
 //!         let v: i32 = -5;
 //!
-//!         let v_abs = v.[it.abs()];
+//!         let v_abs = v.[this.abs()];
 //!#        assert_eq!(v_abs, 5);
-//!         let v_pow = v.[it.pow(2)];
+//!         let v_pow = v.[this.pow(2)];
 //!#        assert_eq!(v_pow, 25);
 //!
 //!     }
@@ -44,8 +44,8 @@
 //! ```
 //! extdot::expr!{
 //!     let map = std::collections::HashMap::new().[
-//!         it.insert("key1", 13),
-//!         it.insert("key2", 17),
+//!         this.insert("key1", 13),
+//!         this.insert("key2", 17),
 //!     ];
 //!
 //!#    assert_eq!(map.get("key1"), Some(&13));
@@ -63,9 +63,9 @@
 //!     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 //!        let v: i32 = -7;
 //!
-//!        let v_abs = v.[it.abs()];
+//!        let v_abs = v.[this.abs()];
 //!#       assert_eq!(v_abs, 7);
-//!        let v_pow = v.[it.pow(2)];
+//!        let v_pow = v.[this.pow(2)];
 //!#       assert_eq!(v_pow, 49);
 //!
 //!        write!(f, "({}, {})", v_abs, v_pow)
