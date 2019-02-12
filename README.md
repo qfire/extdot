@@ -1,5 +1,3 @@
-***WARNING:*** This crate is still very far from the Pre-RFC and not yet ready for general use.
-
 [Pre-RFC] Extended Dot Operator
 ===============================
 
