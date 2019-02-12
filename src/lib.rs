@@ -31,6 +31,7 @@
 //!         let point: Point =
 //!           Path::new("tests/data/point.json")
 //!           .[File::open]?
+//!           .[dbg!]
 //!           .[serde_json::from_reader]?;
 //!
 //!#        assert_eq!(point.x, 4);
@@ -52,6 +53,7 @@
 //!#    assert_eq!(map.get("key2"), Some(&17));
 //! }
 //! ```
+//!
 //! ## In areas where item syntax is needed.
 //! ```rust
 //! use std::fmt;

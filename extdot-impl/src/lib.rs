@@ -173,6 +173,7 @@ fn is_ident(trees: &[TokenTree]) -> bool {
         match token {
             TokenTree::Ident(_) => (),
             TokenTree::Punct(ref punct) if punct.as_char() == ':' => (),
+            TokenTree::Punct(ref punct) if punct.as_char() == '!' => (),
             TokenTree::Literal(_) => return false,
             TokenTree::Group(_) => return false,
             TokenTree::Punct(_) => return false,
